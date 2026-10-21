@@ -1,37 +1,56 @@
 import { groq } from '@ai-sdk/groq';
-import { streamText } from 'ai';
+import { streamText, tool } from 'ai';
+import { z } from 'zod';
+import { tavily } from '@tavily/core';
 
 export const maxDuration = 30;
 
+// Khởi tạo Tavily
+const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });
+
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    const { messages, memory } = await req.json();
     
+    const baseSystem = `Bạn là CAP AI - Một Chuyên gia Công nghệ Cấp cao kiêm Trợ lý Tri thức Toàn cầu. 
+    Phong cách: Đi thẳng vào vấn đề, súc tích, giải pháp trước - giải thích sau, không lan man.
+    QUY TẮC TRA CỨU: Nếu người dùng hỏi về thông tin thời sự, tin tức mới, giá cả, thời tiết hoặc bất kỳ dữ liệu nào có thể thay đổi theo thời gian, BẮT BUỘC phải sử dụng công cụ 'searchWeb' để tra cứu internet trước khi trả lời. Sau khi có kết quả, hãy tóm gọn lại một cách thông minh và liền mạch.`;
+    
+    const memoryPrompt = memory && memory.trim() !== "" 
+      ? `\n\n[KINH NGHIỆM VỀ NGƯỜI DÙNG - BẮT BUỘC TUÂN THỦ]:\n${memory}` 
+      : "";
+
     const result = streamText({
       model: groq('llama-3.3-70b-versatile'),
-      temperature: 0.3, // Hạ xuống 0.3 để AI trả lời chính xác, logic, bớt lan man
-      
-      // BỘ NÃO SIÊU CẤP: CHUYÊN GIA - TRỰC DIỆN - ĐÚNG TRỌNG TÂM
-      system: `Bạn là CAP AI - Một Chuyên gia Công nghệ Cấp cao (Senior Tech Lead & Software Architect). Bạn sở hữu bộ não siêu việt, tư duy logic sắc bén và kiến thức chuyên sâu về Next.js, React, TypeScript, Node.js và hệ sinh thái AI.
-
-      PHONG CÁCH GIAO TIẾP (BẮT BUỘC TUÂN THỦ):
-      1. ĐI THẲNG VÀO VẤN ĐỀ: Tuyệt đối KHÔNG chào hỏi dài dòng, KHÔNG rào trước đón sau (Ví dụ: cấm viết "Chào bạn, đây là một câu hỏi rất hay..."). Trả lời trực diện vào câu hỏi ngay từ câu đầu tiên.
-      2. ĐÚNG TRỌNG TÂM: Câu trả lời phải súc tích, đi thẳng vào bản chất. Loại bỏ hoàn toàn các từ ngữ thừa, không lan man.
-      3. GIẢI PHÁP TRƯỚC, GIẢI THÍCH SAU: Nếu là bài toán code, hãy đưa ra đoạn code giải quyết được vấn đề TRƯỚC. Sau đó mới giải thích ngắn gọn 1-2 dòng về cách nó hoạt động.
-      4. TƯ DUY PHẢN BIỆN: Nếu người dùng đưa ra một giải pháp tồi hoặc code có lỗi, hãy chỉ ra lỗi sai một cách thẳng thắn và đưa ra giải pháp tối ưu nhất.
-      5. KHÔNG DÙNG EMOJI: Giữ thái độ chuyên nghiệp, nghiêm túc, đáng tin cậy.
-      
-      ĐỊNH DẠNG:
-      - Sử dụng Markdown rõ ràng (in đậm các ý chính, dùng code block \`\`\`typescript ... \`\`\` cho code).
-      - Trình bày dạng gạch đầu dòng hoặc các bước ngắn gọn nếu cần thiết.
-
-      Hãy trả lời với tư cách là một chuyên gia thực thụ, giải quyết vấn đề của người dùng một cách nhanh chóng và chính xác nhất.`,
+      temperature: 0.3, 
+      system: baseSystem + memoryPrompt,
       messages,
+      maxSteps: 5, // Cho phép AI gọi tool, nhận kết quả và tự động trả lời (liền mạch)
+      tools: {
+        // ĐÂY LÀ CÁNH TAY NỐI DÀI: TRA CỨU INTERNET
+        searchWeb: tool({
+          description: 'Tra cứu thông tin mới nhất trên internet. Dùng khi cần tìm tin tức, sự kiện hiện tại, dữ liệu thời gian thực.',
+          parameters: z.object({
+            query: z.string().describe('Từ khóa tìm kiếm tối ưu nhất'),
+          }),
+          execute: async ({ query }) => {
+            try {
+              const response = await tvly.search(query, {
+                searchDepth: 'basic',
+                maxResults: 3, // Chỉ lấy 3 kết quả tốt nhất để tóm gọn
+              });
+              return response.results.map((r: any) => r.content).join('\n\n');
+            } catch (error) {
+              return "Không thể tra cứu lúc này.";
+            }
+          },
+        }),
+      },
     });
 
     return result.toDataStreamResponse();
   } catch (error) {
-    console.error("Lỗi API Groq:", error);
+    console.error("Lỗi API:", error);
     return new Response('Lỗi server', { status: 500 });
   }
 }
