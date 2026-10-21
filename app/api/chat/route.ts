@@ -5,7 +5,6 @@ import { tavily } from '@tavily/core';
 
 export const maxDuration = 30;
 
-// Khởi tạo Tavily
 const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY });
 
 export async function POST(req: Request) {
@@ -25,9 +24,8 @@ export async function POST(req: Request) {
       temperature: 0.3, 
       system: baseSystem + memoryPrompt,
       messages,
-      maxSteps: 5, // Cho phép AI gọi tool, nhận kết quả và tự động trả lời (liền mạch)
+      maxSteps: 5,
       tools: {
-        // ĐÂY LÀ CÁNH TAY NỐI DÀI: TRA CỨU INTERNET
         searchWeb: tool({
           description: 'Tra cứu thông tin mới nhất trên internet. Dùng khi cần tìm tin tức, sự kiện hiện tại, dữ liệu thời gian thực.',
           parameters: z.object({
@@ -37,7 +35,7 @@ export async function POST(req: Request) {
             try {
               const response = await tvly.search(query, {
                 searchDepth: 'basic',
-                maxResults: 3, // Chỉ lấy 3 kết quả tốt nhất để tóm gọn
+                maxResults: 3,
               });
               return response.results.map((r: any) => r.content).join('\n\n');
             } catch (error) {
