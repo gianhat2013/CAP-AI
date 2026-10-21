@@ -41,7 +41,6 @@ export default function Chat() {
     }
   };
 
-  // Dòng này đã được sửa lại cho đủ thẻ đóng
   if (!isLoaded) return <div style={{ color: 'white', padding: '20px', backgroundColor: '#0d1117', height: '100vh' }}>Đang tải bộ nhớ...</div>;
 
   return (
@@ -56,7 +55,7 @@ export default function Chat() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#238636' }}></div>
           <h1 style={{ fontSize: '18px', margin: 0, fontWeight: '600', color: '#e6edf3', fontFamily: 'monospace' }}>
-            CAP AI <span style={{ color: '#8b949e', fontWeight: '400' }}>// Web Search Active</span>
+            CAP AI <span style={{ color: '#8b949e', fontWeight: '400' }}>// Online</span>
           </h1>
         </div>
         
@@ -74,7 +73,7 @@ export default function Chat() {
       {showMemory && (
         <div style={{ marginBottom: '15px', padding: '10px', backgroundColor: '#161b22', border: '1px solid #30363d', borderRadius: '8px' }}>
           <label style={{ fontSize: '12px', color: '#8b949e', display: 'block', marginBottom: '5px' }}>
-            Ghi chú kinh nghiệm (AI sẽ nhớ điều này trong mọi cuộc trò chuyện):
+            Ghi chú kinh nghiệm (AI sẽ nhớ điều này):
           </label>
           <textarea
             value={memory} onChange={handleMemoryChange}
@@ -105,50 +104,37 @@ export default function Chat() {
             <strong style={{ fontSize: '12px', color: m.role === 'user' ? '#8b949e' : '#58a6ff', display: 'block', marginBottom: '8px', fontWeight: '600', fontFamily: 'monospace', textTransform: 'uppercase' }}>
               {m.role === 'user' ? 'You' : 'CAP AI'}
             </strong>
-
-            {/* Hiển thị trạng thái đang search web */}
-            {m.toolInvocations?.map((toolInvocation) => (
-              <div key={toolInvocation.toolCallId} style={{ fontSize: '13px', color: '#d29922', fontFamily: 'monospace', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {toolInvocation.state === 'call' ? (
-                  <span>⏳ Đang tra cứu Internet...</span>
-                ) : (
-                  <span>✅ Đã tra cứu xong.</span>
-                )}
-              </div>
-            ))}
             
             {m.role === 'user' ? (
               <span style={{ whiteSpace: 'pre-wrap', fontSize: '15px', color: '#e6edf3' }}>{m.content}</span>
             ) : (
-              m.content && (
-                <div style={{ fontSize: '15px', color: '#c9d1d9' }} className="markdown-body">
-                  <ReactMarkdown
-                    components={{
-                      p: ({node, ...props}) => <p style={{ margin: '0 0 12px 0' }} {...props} />,
-                      a: ({node, ...props}) => <a style={{ color: '#58a6ff', textDecoration: 'none' }} {...props} />,
-                      ul: ({node, ...props}) => <ul style={{ margin: '0 0 12px 0', paddingLeft: '20px' }} {...props} />,
-                      li: ({node, ...props}) => <li style={{ marginBottom: '6px' }} {...props} />,
-                      code: ({node, inline, ...props}: any) => 
-                        inline ? (
-                          <code style={{ backgroundColor: '#343942', padding: '2px 6px', borderRadius: '4px', fontSize: '14px', fontFamily: 'monospace', color: '#e6edf3' }} {...props} />
-                        ) : (
-                          <div style={{ backgroundColor: '#161b22', borderRadius: '8px', border: '1px solid #30363d', marginBottom: '16px', overflow: 'hidden' }}>
-                            <div style={{ backgroundColor: '#21262d', padding: '8px 16px', fontSize: '12px', color: '#8b949e', borderBottom: '1px solid #30363d' }}>Code</div>
-                            <pre style={{ margin: 0, padding: '16px', overflowX: 'auto' }}>
-                              <code style={{ fontFamily: 'monospace', fontSize: '14px', color: '#e6edf3' }} {...props} />
-                            </pre>
-                          </div>
-                        )
-                    }}
-                  >
-                    {m.content}
-                  </ReactMarkdown>
-                </div>
-              )
+              <div style={{ fontSize: '15px', color: '#c9d1d9' }} className="markdown-body">
+                <ReactMarkdown
+                  components={{
+                    p: ({node, ...props}) => <p style={{ margin: '0 0 12px 0' }} {...props} />,
+                    a: ({node, ...props}) => <a style={{ color: '#58a6ff', textDecoration: 'none' }} {...props} />,
+                    ul: ({node, ...props}) => <ul style={{ margin: '0 0 12px 0', paddingLeft: '20px' }} {...props} />,
+                    li: ({node, ...props}) => <li style={{ marginBottom: '6px' }} {...props} />,
+                    code: ({node, inline, ...props}: any) => 
+                      inline ? (
+                        <code style={{ backgroundColor: '#343942', padding: '2px 6px', borderRadius: '4px', fontSize: '14px', fontFamily: 'monospace', color: '#e6edf3' }} {...props} />
+                      ) : (
+                        <div style={{ backgroundColor: '#161b22', borderRadius: '8px', border: '1px solid #30363d', marginBottom: '16px', overflow: 'hidden' }}>
+                          <div style={{ backgroundColor: '#21262d', padding: '8px 16px', fontSize: '12px', color: '#8b949e', borderBottom: '1px solid #30363d' }}>Code</div>
+                          <pre style={{ margin: 0, padding: '16px', overflowX: 'auto' }}>
+                            <code style={{ fontFamily: 'monospace', fontSize: '14px', color: '#e6edf3' }} {...props} />
+                          </pre>
+                        </div>
+                      )
+                  }}
+                >
+                  {m.content}
+                </ReactMarkdown>
+              </div>
             )}
           </div>
         ))}
-        {isLoading && !messages[messages.length - 1]?.toolInvocations && (
+        {isLoading && (
           <div style={{ color: '#8b949e', fontSize: '14px', fontFamily: 'monospace', paddingLeft: '15px' }}>❯ Đang xử lý...</div>
         )}
       </div>
@@ -157,7 +143,7 @@ export default function Chat() {
       <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px', flexShrink: 0, paddingBottom: '10px', backgroundColor: '#161b22', padding: '10px', borderRadius: '8px', border: '1px solid #30363d' }}>
         <span style={{ color: '#8b949e', display: 'flex', alignItems: 'center', fontFamily: 'monospace', fontSize: '16px' }}>❯</span>
         <input
-          value={input} onChange={handleInputChange} placeholder="Hỏi bất cứ điều gì (thời sự, code, giá vàng...)..."
+          value={input} onChange={handleInputChange} placeholder="Hỏi CAP AI bất cứ điều gì..."
           style={{ flex: 1, backgroundColor: 'transparent', border: 'none', color: '#e6edf3', fontSize: '15px', outline: 'none', fontFamily: 'monospace' }}
           disabled={isLoading}
         />
