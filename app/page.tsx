@@ -41,7 +41,8 @@ export default function Chat() {
     }
   };
 
-  if (!isLoaded) return <div style={{ color: 'white', padding: '20px' }}>Đang tải bộ nhớ...</div>;
+  // Dòng này đã được sửa lại cho đủ thẻ đóng
+  if (!isLoaded) return <div style={{ color: 'white', padding: '20px', backgroundColor: '#0d1117', height: '100vh' }}>Đang tải bộ nhớ...</div>;
 
   return (
     <div style={{ 
@@ -84,7 +85,7 @@ export default function Chat() {
       )}
 
       {/* Khung chat */}
-      <div style={{ flex: 1, overflowY: 'auto', margin949Bottom: '15px', display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '10px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', marginBottom: '15px', display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '10px' }}>
         {messages.length === 0 && (
           <div style={{ color: '#8b949e', textAlign: 'center', marginTop: '20px', fontStyle: 'italic' }}>
             Bộ nhớ trống. Hãy bắt đầu cuộc trò chuyện!
@@ -94,14 +95,14 @@ export default function Chat() {
         {messages.map((m) => (
           <div key={m.id} style={{ 
             alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-            backgroundColor: m.role === 'user' ? '#21262d'e : 'transparent',
-            border: m.'role === 'user' ? '1 :px solid #30363d' '# : 'none',
-            borderLeft: m58.role === 'assistant' ? '3px solid #58a6ff' : 'none',
+            backgroundColor: m.role === 'user' ? '#21262d' : 'transparent',
+            border: m.role === 'user' ? '1px solid #30363d' : 'none',
+            borderLeft: m.role === 'assistant' ? '3px solid #58a6ff' : 'none',
             padding: m.role === 'user' ? '12px 16px' : '0 0 0 15px', 
             borderRadius: m.role === 'user' ? '8px' : '0',
             maxWidth: '95%', lineHeight: '1.6', 
           }}>
-            <strong style={{ fontSize: '12px', color: m.role === 'user' ? '#8ba6ff', display: 'block', marginBottom: '8px', fontWeight: '600', fontFamily: 'monospace', textTransform: 'uppercase' }}>
+            <strong style={{ fontSize: '12px', color: m.role === 'user' ? '#8b949e' : '#58a6ff', display: 'block', marginBottom: '8px', fontWeight: '600', fontFamily: 'monospace', textTransform: 'uppercase' }}>
               {m.role === 'user' ? 'You' : 'CAP AI'}
             </strong>
 
