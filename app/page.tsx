@@ -1,112 +1,56 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useChat } from 'ai/react';
 
-export default function Home() {
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<
-    { role: string; text: string }[]
-  >([]);
-
-  async function sendMessage() {
-    const text = message.trim();
-    if (!text) return;
-
-    setMessages((old) => [
-      ...old,
-      { role: "Bạn", text },
-    ]);
-    setMessage("");
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
-      });
-
-      const data = await response.json();
-
-      setMessages((old) => [
-        ...old,
-        {
-          role: "CAP AI",
-          text: data.reply || data.error || "Chưa nhận được câu trả lời.",
-        },
-      ]);
-    } catch {
-      setMessages((old) => [
-        ...old,
-        {
-          role: "CAP AI",
-          text: "Chưa kết nối được AI. Hãy kiểm tra cấu hình máy chủ.",
-        },
-      ]);
-    }
-  }
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat();
 
   return (
-    <main style={{
-      minHeight: "100vh",
-      background: "#090b12",
-      color: "white",
-      padding: 20,
-      fontFamily: "Arial, sans-serif"
-    }}>
-      <h1 style={{ color: "#a99aff" }}>✦ CAP AI</h1>
-      <p>Trợ lý AI của riêng bạn</p>
+    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', display: 'flex', flexDirection: 'column', height: '100vh', boxSizing: 'border-box' }}>
+      
+      {/* Header */}
+      <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '24px', color: '#a78bfa', margin: 0 }}>✨ CAP AI</h1>
+        <p style={{ fontSize: '14px', color: '#94a3b8', marginTop: '5px' }}>Trợ lý AI của riêng bạn</p>
+      </div>
 
-      <section style={{ paddingBottom: 100 }}>
-        {messages.map((m, i) => (
-          <div key={i} style={{
-            background: "#191c29",
-            padding: 14,
-            margin: "12px 0",
-            borderRadius: 14,
-            overflowWrap: "anywhere"
+      {/* Khung chat */}
+      <div style={{ flex: 1, overflowY: 'auto', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        {messages.map((m) => (
+          <div key={m.id} style={{ 
+            alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+            backgroundColor: m.role === 'user' ? '#4c1d95' : '#1e293b',
+            padding: '12px 16px',
+            borderRadius: '12px',
+            maxWidth: '85%',
+            lineHeight: '1.5'
           }}>
-            <b>{m.role}</b>
-            <p>{m.text}</p>
+            <strong style={{ fontSize: '12px', color: m.role === 'user' ? '#ddd6fe' : '#a78bfa', display: 'block', marginBottom: '4px' }}>
+              {m.role === 'user' ? 'Bạn' : 'CAP AI'}
+            </strong>
+            <span style={{ whiteSpace: 'pre-wrap' }}>{m.content}</span>
           </div>
         ))}
-      </section>
+        {isLoading && <div style={{ color: '#94a3b8', fontSize: '14px' }}>CAP AI đang suy nghĩ...</div>}
+      </div>
 
-      <form onSubmit={(e) => {
-        e.preventDefault();
-        void sendMessage();
-      }} style={{
-        position: "fixed",
-        bottom: 15,
-        left: 12,
-        right: 12,
-        display: "flex",
-        gap: 8,
-        background: "#191c29",
-        padding: 10,
-        borderRadius: 16
-      }}>
+      {/* Ô nhập tin nhắn */}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px' }}>
         <input
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Nhắn tin cho CAP AI..."
-          style={{
-            flex: 1,
-            minWidth: 0,
-            padding: 12,
-            borderRadius: 10,
-            border: "1px solid #34384b",
-            background: "#090b12",
-            color: "white"
-          }}
+          value={input}
+          onChange={handleInputChange}
+          placeholder="Nhập tin nhắn cho CAP AI..."
+          style={{ flex: 1, padding: '14px', borderRadius: '8px', border: '1px solid #334155', backgroundColor: '#1e293b', color: 'white', fontSize: '16px', outline: 'none' }}
+          disabled={isLoading}
         />
-        <button type="submit" style={{
-          background: "#7665f7",
-          color: "white",
-          border: 0,
-          borderRadius: 10,
-          padding: "0 16px"
-        }}>Gửi</button>
+        <button 
+          type="submit" 
+          disabled={isLoading} 
+          style={{ padding: '0 20px', borderRadius: '8px', border: 'none', backgroundColor: '#7c3aed', color: 'white', fontSize: '16px', fontWeight: 'bold', cursor: isLoading ? 'not-allowed' : 'pointer' }}
+        >
+          Gửi
+        </button>
       </form>
-    </main>
+    </div>
   );
 }
