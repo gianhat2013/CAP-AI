@@ -9,13 +9,13 @@ export async function POST(req: Request) {
     
     const result = streamText({
       model: groq('llama-3.3-70b-versatile'),
-      system: 'Bạn là CAP AI, một trợ lý trí tuệ nhân tạo hữu ích. Hãy trả lời bằng tiếng Việt, ngắn gọn và thân thiện.',
+      system: 'Bạn là CAP AI, trợ lý ảo thân thiện. Hãy trả lời bằng tiếng Việt.',
       messages,
     });
 
     return result.toDataStreamResponse();
   } catch (error) {
-    console.error("Lỗi API Groq:", error);
-    return new Response("Lỗi server", { status: 500 });
+    console.error(error);
+    return new Response('Lỗi server', { status: 500 });
   }
 }
