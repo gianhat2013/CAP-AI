@@ -19,7 +19,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi">
-      <body style={{ margin: 0, padding: 0, fontFamily: "Arial, sans-serif", backgroundColor: "#0f172a", color: "#ffffff" }}>
+      <body style={{ 
+        margin: 0, 
+        padding: 0, 
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", 
+        backgroundColor: "#0f172a", // Màu nền xanh đen giống ảnh
+        color: "#f8fafc" 
+      }}>
         {children}
       </body>
     </html>
