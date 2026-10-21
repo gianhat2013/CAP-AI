@@ -3,12 +3,11 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const message = body.message;
+    const { message } = await request.json();
 
-    if (!message || typeof message !== "string") {
+    if (typeof message !== "string" || !message.trim()) {
       return NextResponse.json(
-        { error: "Vui lòng nhập tin nhắn." },
+        { error: "Mày chưa nhập tin nhắn." },
         { status: 400 }
       );
     }
@@ -17,7 +16,7 @@ export async function POST(request: Request) {
 
     if (!apiKey) {
       return NextResponse.json(
-        { error: "Máy chủ chưa cấu hình API key." },
+        { error: "Chưa thêm OPENAI_API_KEY trong Vercel." },
         { status: 500 }
       );
     }
@@ -32,7 +31,7 @@ export async function POST(request: Request) {
         },
         body: JSON.stringify({
           model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
-          input: message,
+          input: message.trim(),
         }),
       }
     );
@@ -40,23 +39,40 @@ export async function POST(request: Request) {
     const data = await response.json();
 
     if (!response.ok) {
+      let error = "AI gặp lỗi. Hãy thử lại.";
+
+      if (response.status === 401) {
+        error = "API key không hợp lệ. Kiểm tra OPENAI_API_KEY.";
+      } else if (response.status === 429) {
+        error = "API đã hết hạn mức hoặc gửi quá nhiều yêu cầu. Kiểm tra Usage và Billing.";
+      } else if (response.status === 403) {
+        error = "API chưa có quyền sử dụng tài nguyên này.";
+      } else if (response.status >= 500) {
+        error = "Máy chủ AI đang gặp sự cố. Thử lại sau nhé.";
+      }
+
       return NextResponse.json(
-        { error: "AI đang gặp lỗi. Hãy thử lại sau." },
-        { status: 502 }
+        { error },
+        { status: response.status === 429 ? 429 : 502 }
       );
     }
 
-    const reply =
-      data.output
-        ?.flatMap((item: any) => item.content || [])
-        ?.filter((item: any) => item.type === "output_text")
-        ?.map((item: any) => item.text)
-        ?.join("\n") || "AI chưa có câu trả lời.";
+    const reply = data.output
+      ?.flatMap((item: { content?: { type: string; text?: string }[] }) =>
+        item.content || []
+      )
+      ?.filter((item: { type: string }) =>
+        item.type === "output_text"
+      )
+      ?.map((item: { text?: string }) => item.text || "")
+      ?.join("\n");
 
-    return NextResponse.json({ reply });
+    return NextResponse.json({
+      reply: reply || "AI chưa có câu trả lời, thử lại nhé.",
+    });
   } catch {
     return NextResponse.json(
-      { error: "Không thể xử lý yêu cầu." },
+      { error: "Không thể kết nối máy chủ. Thử lại nhé." },
       { status: 500 }
     );
   }
