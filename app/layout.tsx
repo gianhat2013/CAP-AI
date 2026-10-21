@@ -1,33 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import type { ReactNode } from "react";
 
-// Cấu hình Metadata (giữ nguyên của bạn)
 export const metadata: Metadata = {
   title: "CAP AI",
-  description: "Trợ lý trí tuệ nhân tạo thông minh",
+  description: "Trợ lý AI của riêng bạn",
 };
 
-// Cấu hình chặn zoom trên mobile (MỚI THÊM)
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false, // Chặn người dùng phóng to/thu nhỏ
+  userScalable: false,
 };
 
 export default function RootLayout({
   children,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
   return (
     <html lang="vi">
-      <body
-        style={{
-          margin: 0,
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
+      <body style={{ margin: 0, padding: 0, fontFamily: "Arial, sans-serif", backgroundColor: "#0f172a", color: "#ffffff" }}>
         {children}
       </body>
     </html>
