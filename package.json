@@ -1,8 +1,24 @@
 {
   "name": "cap-ai",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
-  "scripts": {"dev": "next dev", "build": "next build", "start": "next start"},
-  "dependencies": {"@supabase/supabase-js": "^2.49.1", "next": "^15.2.4", "openai": "^4.89.0", "react": "^19.0.0", "react-dom": "^19.0.0"},
-  "devDependencies": {"@types/node": "^22.13.10", "@types/react": "^19.0.10", "typescript": "^5.8.2"}
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ai-sdk/groq": "^1.2.9",
+    "ai": "^4.3.16",
+    "next": "14.2.5",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5"
+  }
 }
